@@ -1,7 +1,10 @@
+import logging
 import uuid
 from urllib.parse import urljoin, urlencode, parse_qs
 
 import requests
+
+logger = logging.getLogger('moneybird')
 
 
 class Authentication(object):
@@ -118,32 +121,43 @@ class OAuthAuthentication(Authentication):
         url_data = parse_qs(redirect_url.split('?', 1)[1])
 
         if 'error' in url_data:
+            logger.warn("Error received in OAuth authentication response: %s" % url_data.get('error'))
             raise OAuthAuthentication.OAuthError(url_data['error'], url_data.get('error_description', None))
 
         if 'code' not in url_data:
-            raise ValueError("The provided URL is not a valid OAuth authentication response, 'code' is missing.")
+            logger.error("The provided URL is not a valid OAuth authentication response: no code")
+            raise ValueError("The provided URL is not a valid OAuth authentication response: no code")
 
         if state and [state] != url_data['state']:
-            raise ValueError("CSRF attack detected, the state in the provided URL does not equal the given state.")
+            logger.warn("OAuth CSRF attack detected: the state in the provided URL does not equal the given state")
+            raise ValueError("CSRF attack detected: the state in the provided URL does not equal the given state")
 
-        response = requests.post(
-            url=urljoin(self.base_url, self.token_url),
-            data={
-                'grant_type': 'authorization_code',
-                'code': url_data['code'][0],
-                'redirect_uri': self.redirect_url,
-                'client_id': self.client_id,
-                'client_secret': self.client_secret,
-            },
-        ).json()
+        try:
+            response = requests.post(
+                url=urljoin(self.base_url, self.token_url),
+                data={
+                    'grant_type': 'authorization_code',
+                    'code': url_data['code'][0],
+                    'redirect_uri': self.redirect_url,
+                    'client_id': self.client_id,
+                    'client_secret': self.client_secret,
+                },
+            ).json()
+        except ValueError:
+            logger.error("The OAuth server returned an invalid response when obtaining a token: JSON error")
+            raise ValueError("The OAuth server returned an invalid response when obtaining a token: JSON error")
 
         if 'error' in response:
-            raise OAuthAuthentication.OAuthError(response['error'], response.get('error_description', None))
+            logger.warn("Error while obtaining OAuth authorization token: %s" % response['error'])
+            raise OAuthAuthentication.OAuthError(response['error'], response.get('error', ''))
 
         if 'access_token' not in response:
-            raise ValueError("The remote server returned an invalid response when exchanging tokens.")
+            logger.error("The OAuth server returned an invalid response when obtaining a token: no access token")
+            raise ValueError("The remote server returned an invalid response when obtaining a token: no access token")
 
         self.real_auth.set_token(response['access_token'])
+        logger.debug("Obtained authentication token for state %s: %s" % (state, self.real_auth.auth_token))
+
         return response['access_token']
 
     def is_ready(self) -> bool:
@@ -158,7 +172,9 @@ class OAuthAuthentication(Authentication):
         Generates a new random string to be used as OAuth state.
         :return: A randomly generated OAuth state
         """
-        return str(uuid.uuid4()).replace('-', '')
+        state = str(uuid.uuid4()).replace('-', '')
+        logger.debug("Generated OAuth state: %s" % state)
+        return state
 
     class OAuthError(Exception):
         """

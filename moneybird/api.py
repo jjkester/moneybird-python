@@ -1,3 +1,4 @@
+import logging
 from urllib.parse import urljoin
 
 import requests
@@ -5,6 +6,8 @@ import requests
 from .authentication import Authentication
 
 VERSION = '1.0.0-alpha'
+
+logger = logging.getLogger('moneybird')
 
 
 class MoneyBird(object):
@@ -103,6 +106,7 @@ class MoneyBird(object):
         This method can be used to clear session data, e.g., cookies. Future requests will use a new session initiated
         with the same settings and authentication method.
         """
+        logger.debug("API session renewed")
         self.session = self.authentication.get_session()
         self.session.headers.update({
             'User-Agent': 'MoneyBird for Python %s' % VERSION,
@@ -158,14 +162,17 @@ class MoneyBird(object):
             500: MoneyBird.ServerError,
         }
 
+        logger.debug("API request: %s %s\n" % (response.request.method, response.request.url) +
+                     "Response: %s %s" % (response.status_code, response.text))
+
         if response.status_code not in responses:
-            raise MoneyBird.APIError(response, "Unknown status code received.")
+            logger.error("API response contained unknown status code")
+            raise MoneyBird.APIError(response, "API response contained unknown status code")
         elif responses[response.status_code] is not None:
             try:
                 description = response.json()['error']
-            except (AttributeError, TypeError, KeyError, ValueError) as e:
+            except (AttributeError, TypeError, KeyError, ValueError):
                 description = None
-
             raise responses[response.status_code](response, description)
 
         return response.json()
