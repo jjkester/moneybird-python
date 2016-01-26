@@ -5,7 +5,7 @@ import requests
 
 from .authentication import Authentication
 
-VERSION = '1.0.0-alpha'
+VERSION = '0.1.0'
 
 logger = logging.getLogger('moneybird')
 
@@ -28,7 +28,8 @@ class MoneyBird(object):
         Performs a GET request to the endpoint identified by the resource path.
 
         Example:
-            >>> moneybird = MoneyBird(Authentication())
+            >>> from moneybird import MoneyBird, TokenAuthentication
+            >>> moneybird = MoneyBird(TokenAuthentication('access_token'))
             >>> moneybird.get('administrations')
             [{'id': 123, 'name': 'Parkietje B.V.', 'language': 'nl', ...
             >>> moneybird.get('contacts/synchronization', 123)
@@ -49,7 +50,8 @@ class MoneyBird(object):
         new data.
 
         Example:
-            >>> moneybird = MoneyBird(Authentication())
+            >>> from moneybird import MoneyBird, TokenAuthentication
+            >>> moneybird = MoneyBird(TokenAuthentication('access_token'))
             >>> data = {'url': 'http://www.mocky.io/v2/5185415ba171ea3a00704eed'}
             >>> moneybird.post('webhooks', data, 123)
             {'id': '143274315994891267', 'url': 'http://www.mocky.io/v2/5185415ba171ea3a00704eed', ...
@@ -132,7 +134,7 @@ class MoneyBird(object):
         return url
 
     @staticmethod
-    def _process_response(response: requests.Response) -> dict:
+    def _process_response(response: requests.Response, expected: list = []) -> dict:
         """
         Processes an API response. Raises an exception when appropriate.
 
@@ -147,6 +149,7 @@ class MoneyBird(object):
           - MoneyBird.ServerError: Error on the server
 
         :param response: The response to process
+        :param expected: A list of expected status codes which won't raise an exception
         :return: The useful data in the response (may be None)
         """
         responses = {
@@ -165,17 +168,24 @@ class MoneyBird(object):
         logger.debug("API request: %s %s\n" % (response.request.method, response.request.url) +
                      "Response: %s %s" % (response.status_code, response.text))
 
-        if response.status_code not in responses:
-            logger.error("API response contained unknown status code")
-            raise MoneyBird.APIError(response, "API response contained unknown status code")
-        elif responses[response.status_code] is not None:
-            try:
-                description = response.json()['error']
-            except (AttributeError, TypeError, KeyError, ValueError):
-                description = None
-            raise responses[response.status_code](response, description)
+        if response.status_code not in expected:
+            if response.status_code not in responses:
+                logger.error("API response contained unknown status code")
+                raise MoneyBird.APIError(response, "API response contained unknown status code")
+            elif responses[response.status_code] is not None:
+                try:
+                    description = response.json()['error']
+                except (AttributeError, TypeError, KeyError, ValueError):
+                    description = None
+                raise responses[response.status_code](response, description)
 
-        return response.json()
+        try:
+            data = response.json()
+        except ValueError:
+            logger.error("API response is not JSON decodable")
+            data = None
+
+        return data
 
     class APIError(Exception):
         """
