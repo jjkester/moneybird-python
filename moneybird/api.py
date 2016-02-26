@@ -127,7 +127,7 @@ class MoneyBird(object):
         url = urljoin(cls.base_url, '%s/' % cls.version)
 
         if administration_id is not None:
-            url = urljoin(url, '%d/' % administration_id)
+            url = urljoin(url, '%s/' % administration_id)
 
         url = urljoin(url, '%s.json' % resource_path)
 
