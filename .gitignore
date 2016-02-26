@@ -4,3 +4,7 @@ __pycache__/
 
 # Docs
 docs/_build
+
+# Dist
+MANIFEST
+dist/
