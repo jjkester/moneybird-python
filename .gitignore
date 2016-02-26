@@ -1,2 +1,6 @@
+# Python
 __pycache__/
 *.pyc
+
+# Docs
+docs/_build
