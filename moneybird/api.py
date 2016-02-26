@@ -3,7 +3,7 @@ from urllib.parse import urljoin
 
 import requests
 
-from .authentication import Authentication
+from moneybird.authentication import Authentication
 
 VERSION = '0.1.0'
 
@@ -11,13 +11,15 @@ logger = logging.getLogger('moneybird')
 
 
 class MoneyBird(object):
+    """
+    Client for the MoneyBird API.
+
+    :param authentication: The authentication method to use
+    """
     version = 'v2'
     base_url = 'https://moneybird.com/api/'
 
     def __init__(self, authentication: Authentication):
-        """
-        :param authentication: The authentication method to use
-        """
         self.authentication = authentication
         self.session = None
 

@@ -32,11 +32,10 @@ class Authentication(object):
 class TokenAuthentication(Authentication):
     """
     Token authentication for the MoneyBird API.
+
+    :param auth_token: The authentication token to use.
     """
     def __init__(self, auth_token: str = ''):
-        """
-        :param auth_token: The authentication token to use.
-        """
         self.auth_token = auth_token
 
     def set_token(self, auth_token: str):
@@ -65,6 +64,11 @@ class OAuthAuthentication(Authentication):
     This is a wrapper around TokenAuthentication since token authentication is used after the OAuth process has been
     performed. This authentication method cannot be used directly, some work is required since the user has to perform
     a number of actions before a token can be obtained.
+
+    :param redirect_url: The URL to redirect to after successful authorization
+    :param client_id: The OAuth client id obtained from MoneyBird
+    :param client_secret: The OAuth client secret obtained from MoneyBird
+    :param auth_token: The optional token from an earlier authorization
     """
     base_url = 'https://moneybird.com/oauth/'
     auth_url = 'authorize/'
