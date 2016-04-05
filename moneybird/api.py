@@ -5,7 +5,7 @@ import requests
 
 from moneybird.authentication import Authentication
 
-VERSION = '0.1.1'
+VERSION = '0.1.3'
 
 logger = logging.getLogger('moneybird')
 
