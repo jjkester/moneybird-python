@@ -13,7 +13,6 @@ setup(
     description='MoneyBird API and OAuth client library',
     install_requires=['requests'],
     classifiers=[
-        'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 3.3',
