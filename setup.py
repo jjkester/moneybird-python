@@ -9,7 +9,6 @@ setup(
     author='Jan-Jelle Kester',
     author_email='janjelle@jjkester.nl',
     description='MoneyBird API and OAuth client library',
-    install_requires=['requests'],
     requires=['requests'],
     classifiers=[
         'Intended Audience :: Developers',
