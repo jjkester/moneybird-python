@@ -30,4 +30,4 @@ Contributing
 
 The source code can be found (and forked) on GitHub. This is also the place where issues can be reported.
 
-GitHub repository: https://github.com/jjkester/django-auditlog
+GitHub repository: https://github.com/jjkester/moneybird-python

@@ -16,7 +16,7 @@ class Authentication(object):
         Checks whether authentication can be performed. A negative result means that it is certain that a request will
         not authenticate.
 
-        :return: Whether the authentication is ready to be used
+        :return: Whether the authentication is ready to be used.
         """
         raise NotImplementedError()
 
@@ -24,7 +24,7 @@ class Authentication(object):
         """
         Creates a new session with the authentication settings applied.
 
-        :return: The new session
+        :return: The new session.
         """
         raise NotImplementedError()
 
@@ -65,10 +65,10 @@ class OAuthAuthentication(Authentication):
     performed. This authentication method cannot be used directly, some work is required since the user has to perform
     a number of actions before a token can be obtained.
 
-    :param redirect_url: The URL to redirect to after successful authorization
-    :param client_id: The OAuth client id obtained from MoneyBird
-    :param client_secret: The OAuth client secret obtained from MoneyBird
-    :param auth_token: The optional token from an earlier authorization
+    :param redirect_url: The URL to redirect to after successful authorization.
+    :param client_id: The OAuth client id obtained from MoneyBird.
+    :param client_secret: The OAuth client secret obtained from MoneyBird.
+    :param auth_token: The optional token from an earlier authorization.
     """
     base_url = 'https://moneybird.com/oauth/'
     auth_url = 'authorize/'
@@ -83,8 +83,9 @@ class OAuthAuthentication(Authentication):
 
     def authorize_url(self, scope: list, state: str = None) -> tuple:
         """
-        Returns the URL to which the user can be redirected to authorize your application to access his/her account and
-        the state which can be used for CSRF protection as a tuple.
+        Returns the URL to which the user can be redirected to authorize your application to access his/her account. It
+        will also return the state which can be used for CSRF protection. A state is generated if not passed to this
+        method.
 
         Example:
             >>> auth = OAuthAuthentication('https://example.com/oauth/moneybird/', 'your_id', 'your_secret')
@@ -92,9 +93,9 @@ class OAuthAuthentication(Authentication):
             ('https://moneybird.com/oauth/authorize?client_id=your_id&redirect_uri=https%3A%2F%2Fexample.com%2Flogin%2F
             moneybird&state=random_string', 'random_string')
 
-        :param scope: The requested scope
-        :param state: Optional state, when omitted a random value is generated
-        :return: 2-tuple containing the URL to redirect the user to and the randomly generated state
+        :param scope: The requested scope.
+        :param state: Optional state, when omitted a random value is generated.
+        :return: 2-tuple containing the URL to redirect the user to and the randomly generated state.
         """
         url = urljoin(self.base_url, self.auth_url)
         params = {
@@ -109,7 +110,8 @@ class OAuthAuthentication(Authentication):
 
     def obtain_token(self, redirect_url: str, state: str) -> str:
         """
-        Exchange the code obtained using `authorize_url` for an authorization token.
+        Exchange the code that was obtained using `authorize_url` for an authorization token. The code is extracted
+        from the URL that redirected the user back to your site.
 
         Example:
             >>> auth = OAuthAuthentication('https://example.com/oauth/moneybird/', 'your_id', 'your_secret')
@@ -118,14 +120,14 @@ class OAuthAuthentication(Authentication):
             >>> auth.is_ready()
             True
 
-        :param redirect_url: The full URL the user was redirected to
-        :param state: The state used in the authorize url
-        :return: The authorization token
+        :param redirect_url: The full URL the user was redirected to.
+        :param state: The state used in the authorize url.
+        :return: The authorization token.
         """
         url_data = parse_qs(redirect_url.split('?', 1)[1])
 
         if 'error' in url_data:
-            logger.warn("Error received in OAuth authentication response: %s" % url_data.get('error'))
+            logger.warning("Error received in OAuth authentication response: %s" % url_data.get('error'))
             raise OAuthAuthentication.OAuthError(url_data['error'], url_data.get('error_description', None))
 
         if 'code' not in url_data:
@@ -133,7 +135,7 @@ class OAuthAuthentication(Authentication):
             raise ValueError("The provided URL is not a valid OAuth authentication response: no code")
 
         if state and [state] != url_data['state']:
-            logger.warn("OAuth CSRF attack detected: the state in the provided URL does not equal the given state")
+            logger.warning("OAuth CSRF attack detected: the state in the provided URL does not equal the given state")
             raise ValueError("CSRF attack detected: the state in the provided URL does not equal the given state")
 
         try:
@@ -152,7 +154,7 @@ class OAuthAuthentication(Authentication):
             raise ValueError("The OAuth server returned an invalid response when obtaining a token: JSON error")
 
         if 'error' in response:
-            logger.warn("Error while obtaining OAuth authorization token: %s" % response['error'])
+            logger.warning("Error while obtaining OAuth authorization token: %s" % response['error'])
             raise OAuthAuthentication.OAuthError(response['error'], response.get('error', ''))
 
         if 'access_token' not in response:
@@ -174,7 +176,7 @@ class OAuthAuthentication(Authentication):
     def _generate_state() -> str:
         """
         Generates a new random string to be used as OAuth state.
-        :return: A randomly generated OAuth state
+        :return: A randomly generated OAuth state.
         """
         state = str(uuid.uuid4()).replace('-', '')
         logger.debug("Generated OAuth state: %s" % state)

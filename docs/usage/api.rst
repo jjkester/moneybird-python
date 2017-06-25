@@ -25,17 +25,17 @@ authentication:
 
     moneybird = MoneyBird(TokenAuthentication('token'))
 
-See :doc:`usage/authentication` for details on authentication.
+See :doc:`authentication` for details on authentication.
 
 Queries
 -------
 
-For queries, there are four methods, one for each type:
+For queries, there are four methods, one for each type of HTTP request:
 
-- get: :py:func:`MoneyBird.get`
-- post: :py:func:`MoneyBird.post`
-- patch: :py:func:`MoneyBird.patch`
-- delete: :py:func:`MoneyBird.delete`
+- Get: :py:func:`MoneyBird.get`
+- Post: :py:func:`MoneyBird.post`
+- Patch: :py:func:`MoneyBird.patch`
+- Delete: :py:func:`MoneyBird.delete`
 
 Method signatures
 ~~~~~~~~~~~~~~~~~

@@ -5,8 +5,8 @@ Authentication
 
 Two authentication methods are supported:
 
-- Token authentication (:py:class:`TokenAuthentication`)
-- OAuth authentication (:py:class:`OAuthAuthentication`)
+- Token authentication (via the :py:class:`TokenAuthentication` class)
+- OAuth authentication (via the :py:class:`OAuthAuthentication` class)
 
 Token authentication
 --------------------
@@ -16,7 +16,8 @@ which you can pass to your :py:class:`TokenAuthentication` instance.
 
 Token authentication is useful when your application only accesses a single MoneyBird administration.
 Token authentication is not recommended when you want to access multiple administrations, especially not when you
-access administrations belonging to users of your application. Please use OAuth authentication instead.
+access administrations belonging to users of your application. Please use OAuth authentication instead in these
+scenarios.
 
 ::
 

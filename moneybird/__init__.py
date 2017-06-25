@@ -1,2 +1,2 @@
-from .api import MoneyBird
-from .authentication import TokenAuthentication, OAuthAuthentication
+from moneybird.api import MoneyBird
+from moneybird.authentication import TokenAuthentication, OAuthAuthentication
