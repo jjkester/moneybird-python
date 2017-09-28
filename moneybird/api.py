@@ -156,6 +156,7 @@ class MoneyBird(object):
         responses = {
             200: None,
             201: None,
+            204: None,
             400: MoneyBird.Unauthorized,
             401: MoneyBird.Unauthorized,
             403: MoneyBird.Throttled,
